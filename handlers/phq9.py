@@ -2,7 +2,7 @@ import json
 from telegram import Update
 from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
 
-from phq9_classifier import classify_response  # ✅ Correct import
+from handlers.phq9_classifier import classify_response  # ✅ Correct import
 
 # Load PHQ-9 questions from questionnaires/
 with open("questionnaires/phq9.json", "r") as f:
