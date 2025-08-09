@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "text": "Over the last 2 weeks, how often have you been bothered by little interest or pleasure in doing things?",
+    "options": ["Not at all (0)", "Several days (1)", "More than half the days (2)", "Nearly every day (3)"]
+  },
+  {
+    "id": 2,
+    "text": "Feeling down, depressed, or hopeless?",
+    "options": ["Not at all (0)", "Several days (1)", "More than half the days (2)", "Nearly every day (3)"]
+  }
+]
