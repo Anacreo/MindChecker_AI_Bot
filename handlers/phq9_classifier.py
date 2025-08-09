@@ -1,8 +1,12 @@
-import openai
 import os
+import logging
+from openai import OpenAI
 
-# Load from Render environment variable
-openai.api_key = os.getenv("OPENAI_KEY")
+# Optional: enable logging
+logger = logging.getLogger(__name__)
+
+# Load API key from Render environment variable
+client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 def classify_response(user_input):
     system_prompt = """
@@ -17,13 +21,16 @@ Given a user's freeform response, classify it into one of:
 Respond ONLY with the selected option and score.
 """
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input}
-        ],
-        temperature=0.2
-    )
-
-    return response.choices[0].message.content.strip()
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input}
+            ],
+            temperature=0.2
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.exception(f"PHQ-9 classification failed for input: {user_input}")
+        return "⚠️ Unable to classify response. Please try again."
