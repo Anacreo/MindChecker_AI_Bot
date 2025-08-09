@@ -1,28 +1,66 @@
-import logging
+import json
+import os
+from datetime import datetime, timezone
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+TOKEN = os.getenv("BOT_TOKEN")
 
+
+DATA_FILE = "user_data.json"
+
+# Load user data from file
+def load_user_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+# Save user data to file
+def save_user_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+# Convert timestamp to relative time string
+def time_since(timestamp_str):
+    last_seen = datetime.fromisoformat(timestamp_str)
+    now = datetime.now(timezone.utc)
+    delta = now - last_seen
+
+    seconds = int(delta.total_seconds())
+    if seconds < 60:
+        return f"{seconds} seconds ago"
+    elif seconds < 3600:
+        return f"{seconds // 60} minutes ago"
+    elif seconds < 86400:
+        return f"{seconds // 3600} hours ago"
+    else:
+        return f"{seconds // 86400} days ago"
+
+# /start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Hello! I'm MindChecker AI Bot. How can I assist you today?\n\nFind me at: https://t.me/MindChecker_AI_Bot"
-    )
+    user_id = str(update.effective_user.id)
+    user_name = update.effective_user.first_name or "there"
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "You can ask me mental health questions, or type /check to start a mental health check!"
-    )
+    user_data = load_user_data()
+    now_str = datetime.now(timezone.utc).isoformat()
 
-def main():
-    application = ApplicationBuilder().token('8489671487:AAHRtLdxt5AhrjaM8HYcSMNkJNLg19AJL_k').build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    print("Bot is running. Press Ctrl+C to stop.")
-    application.run_polling()
+    if user_id in user_data:
+        last_seen = user_data[user_id]["last_seen"]
+        ago = time_since(last_seen)
+        message = f"👋 Welcome back, {user_name}! It's been {ago} since we last saw you."
+    else:
+        message = f"👋 Hello, {user_name}! Nice to meet you."
 
+    # Update last seen
+    user_data[user_id] = {"last_seen": now_str}
+    save_user_data(user_data)
+
+    await update.message.reply_text(message)
+
+# Main bot setup
 if __name__ == '__main__':
-    main()
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.run_polling()
+
