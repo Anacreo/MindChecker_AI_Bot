@@ -2,6 +2,9 @@ import json
 from telegram import Update
 from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
 from handlers.phq9_classifier import classify_response 
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Load PHQ-9 questions from questionnaires/
 with open("questionnaires/phq9.json", "r") as f:
@@ -48,8 +51,10 @@ async def phq9_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         classification = classify_response(user_input)
     except Exception as e:
+        logger.exception(f"OpenAI classification failed for input: {user_input}")
         await update.message.reply_text("⚠️ Sorry, I couldn't process that. Please try again.")
         return
+
 
     session["answers"].append(classification)
     session["index"] += 1
