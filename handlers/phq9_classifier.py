@@ -60,7 +60,7 @@ def query_llm(conversation: list) -> dict:
         logging.error(f"❌ LLM call failed: {e}")
         return {"confidence": 0.0}
 
-def classify_phq9_response(user_input: str, max_turns: int = 5, confidence_threshold: float = 0.9):
+def classify_response(user_input: str, max_turns: int = 5, confidence_threshold: float = 0.9):
     """
     Uses OpenAI to classify PHQ-9 response with clarification loop.
     Logs confidence and decision path.
