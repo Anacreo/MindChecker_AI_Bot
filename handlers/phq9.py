@@ -1,10 +1,16 @@
 import json
-from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
+from aiogram import Router, F
+from aiogram.types import Message
 from handlers.phq9_classifier import classify_response 
 import logging
 
 logger = logging.getLogger(__name__)
+
+router = Router()
+
+@router.message(F.text.contains("PHQ"))
+async def phq_handler(message: Message):
+    await message.answer("Let's begin your PHQ-9 check-in.")
 
 # Load PHQ-9 questions from questionnaires/
 with open("questionnaires/phq9.json", "r") as f:
