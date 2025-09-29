@@ -22,6 +22,9 @@ PORT = int(os.getenv("PORT", 8443))  # Render sets PORT dynamically
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
+from handlers import register_all_handlers
+register_all_handlers(dp)
+
 # FastAPI app
 app = FastAPI()
 
