@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 router = Router()
 
-@router.message(F.text.contains("PHQ"))
+@router.message(F.text.lower().contains("phq"))
 async def phq_handler(message: Message):
     await message.answer("Let's begin your PHQ-9 check-in.")
 
