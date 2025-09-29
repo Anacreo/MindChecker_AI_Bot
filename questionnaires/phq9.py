@@ -1,4 +1,12 @@
 import json
+from nlp_utils import interpret_response
+
+def handle_user_response(user_input):
+    score = interpret_response(user_input)
+    if score is None:
+        return "Hmm, I didn’t quite catch that. Would you say your experience is closer to 'not at all' or 'several days'?"
+    else:
+        return f"Got it: *{score_label(score)} ({score})*"
 
 with open("questionnaires/phq9.json", "r") as f:
     PHQ9 = json.load(f)
