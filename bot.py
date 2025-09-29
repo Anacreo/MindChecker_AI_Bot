@@ -5,7 +5,6 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from contextlib import asynccontextmanager
-from handlers import register_all_handlers
 
 # Logging setup
 logging.basicConfig(
