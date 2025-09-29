@@ -1,9 +1,25 @@
-python-telegram-bot[webhooks]==20.3
-starlette==0.27.0
-uvicorn==0.22.0
-openai>=1.0.0
-python-dotenv>=1.0.0
-aiohttp>=3.8.0
-spacy>=3.7.2
-aiogram>=3.0.0
+# Core bot framework
+aiogram>=3.22.0
+
+# Web server and async framework
 fastapi>=0.110.0
+uvicorn>=0.22.0
+
+# OpenAI integration
+openai>=1.0.0
+
+# Environment variable support
+python-dotenv>=1.0.0
+
+# Optional: logging, progress bars, and rich formatting
+tqdm>=4.67.0
+rich>=14.0.0
+
+# Optional: for async file handling or webhook payloads
+aiofiles>=23.2.1
+
+# Optional: memory tracing (if you use tracemalloc)
+# No extra package needed — built into Python
+
+# Optional: if you use pydantic models for config or validation
+pydantic>=2.0.0
