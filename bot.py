@@ -5,6 +5,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from contextlib import asynccontextmanager
+from handlers.phq9 import router as phq9_router
+from handlers.start import router as start_router
+
 
 # Logging setup
 logging.basicConfig(
@@ -19,7 +22,9 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "") + WEBHOOK_PATH
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
-register_all_handlers(dp)
+
+dp.include_router(phq9_router)
+dp.include_router(start_router)
 
 # Lifespan event handler
 @asynccontextmanager
