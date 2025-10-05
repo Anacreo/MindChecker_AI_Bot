@@ -1,8 +1,8 @@
 import logging
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from questionnaires.phq9 import evaluate_phq9_responses, get_question, get_options
+from questionnaires.phq9 import evaluate_phq9_responses, get_question
 
 router = Router()
 
@@ -13,6 +13,8 @@ user_sessions = {}
 async def phq9_start(message: Message, state: FSMContext):
     user = message.from_user
     user_id = str(user.id)
+    if user_id in user_sessions:
+        del user_sessions[user_id]
     user_sessions[user_id] = {"index": 0, "answers": []}
 
     logging.info(
@@ -60,8 +62,17 @@ async def phq9_response(message: Message):
 
         breakdown = "\n".join([f"Q{i+1}: {a}" for i, a in enumerate(session["answers"])])
         risk_note = (
-            "⚠️ You may be at risk. Please consider speaking with a professional."
+            "⚠️ You may be at risk. Please consider speaking with a professional.\n"
+            "You can explore support options with /support or learn more with /resources."
             if suicide_risk else ""
+        )
+
+        buttons = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="🔁 Retake PHQ-9", callback_data="retake_phq9")],
+                [InlineKeyboardButton(text="🆘 Talk to someone", callback_data="support")],
+                [InlineKeyboardButton(text="📚 Learn more", callback_data="resources")]
+            ]
         )
 
         await message.answer(
@@ -69,7 +80,8 @@ async def phq9_response(message: Message):
             f"Your total score is: {total_score}\n"
             f"Severity: *{severity}*\n\n"
             f"{risk_note}\n\n"
-            f"Here’s your response breakdown:\n{breakdown}"
+            f"Here’s your response breakdown:\n{breakdown}",
+            reply_markup=buttons
         )
 
         del user_sessions[user_id]
@@ -95,3 +107,33 @@ async def send_next_question(message: Message):
         await message.answer(
             f"{question}\n\nPlease reply with:\n0 = Not at all\n1 = Several days\n2 = More than half the days\n3 = Nearly every day"
         )
+
+# 🔁 Retake handler
+@router.callback_query(F.data == "retake_phq9")
+async def retake_phq9(callback: CallbackQuery, state: FSMContext):
+    user = callback.from_user
+    user_id = str(user.id)
+    user_sessions[user_id] = {"index": 0, "answers": []}
+
+    logging.info(f"🔁 PHQ-9 retake initiated by user {user_id}")
+    await callback.message.answer("🔁 Retaking PHQ-9. Let's begin again.")
+    await send_next_question(callback.message)
+    await callback.answer()
+
+# 🆘 Support handler
+@router.callback_query(F.data == "support")
+async def show_support(callback: CallbackQuery):
+    await callback.message.answer(
+        "🆘 If you're feeling overwhelmed, please reach out to a professional.\n"
+        "You can also visit /support for resources and guidance."
+    )
+    await callback.answer()
+
+# 📚 Resources handler
+@router.callback_query(F.data == "resources")
+async def show_resources(callback: CallbackQuery):
+    await callback.message.answer(
+        "📚 Learn more about mental health and wellness by visiting /resources.\n"
+        "We’re here to help you explore safe, supportive options."
+    )
+    await callback.answer()
