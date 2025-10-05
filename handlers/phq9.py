@@ -13,19 +13,20 @@ user_sessions = {}
 async def phq9_start(message: Message, state: FSMContext):
     user = message.from_user
     user_id = str(user.id)
-    if user_id in user_sessions:
-        del user_sessions[user_id]
+
+    had_session = user_id in user_sessions
     user_sessions[user_id] = {"index": 0, "answers": []}
 
     logging.info(
-        f"🧠 PHQ-9 started by user_id={user.id}, username={user.username}, "
-        f"name={user.first_name} {user.last_name}, language={user.language_code}"
+        f"🧠 PHQ-9 {'restarted' if had_session else 'started'} via /phq9 by user_id={user.id}, "
+        f"username={user.username}, name={user.first_name} {user.last_name}, language={user.language_code}"
     )
 
     await message.answer(
-        "🧠 Let's begin the PHQ-9 questionnaire.\nYou can cancel anytime with /cancel."
+        "🧠 Starting a new PHQ-9 questionnaire.\nYou can cancel anytime with /cancel."
     )
     await send_next_question(message)
+
 
 @router.message(F.text.in_(["0", "1", "2", "3"]))
 async def phq9_response(message: Message):
