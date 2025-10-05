@@ -1,13 +1,14 @@
 import logging
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.types import Update
 from contextlib import asynccontextmanager
-from handlers.phq9 import router as phq9_router
-from handlers.start import router as start_router
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
 # Logging setup
 logging.basicConfig(
@@ -23,26 +24,32 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "") + WEBHOOK_PATH
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
+# Routers
+from handlers.phq9 import router as phq9_router
+from handlers.start import router as start_router
 dp.include_router(phq9_router)
 dp.include_router(start_router)
 
-# Lifespan event handler
+# FastAPI app with lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("🚀 Starting bot...")
     await bot.set_webhook(WEBHOOK_URL)
     yield
-    logging.info("🛑 Shutting down bot...")
+    logging.info("🛑 Shutting down bot...s")
     await bot.delete_webhook()
 
-# FastAPI app
 app = FastAPI(lifespan=lifespan)
 
-# Optional health check route
+# Health check route
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
 
-# Webhook binding
-SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
-setup_application(app, dp, bot=bot)
+# Webhook route
+@app.post(WEBHOOK_PATH)
+async def handle_webhook(request: Request):
+    data = await request.json()
+    update = Update.model_validate(data)
+    await dp.feed_update(bot, update)
+    return {"status": "ok"}
