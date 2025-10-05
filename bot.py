@@ -29,6 +29,8 @@ from handlers.phq9 import router as phq9_router
 from handlers.start import router as start_router
 dp.include_router(phq9_router)
 dp.include_router(start_router)
+logging.info("Start router included")
+
 
 # FastAPI app with lifespan
 @asynccontextmanager
