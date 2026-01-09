@@ -48,7 +48,12 @@ app = FastAPI(lifespan=lifespan)
 async def ping():
     return {"status": "ok"}
 
-# Webhook route
+# Webhook GET (Telegram checks this before accepting the webhook)
+@app.get(WEBHOOK_PATH)
+async def webhook_get():
+    return {"status": "ok"}
+
+# Webhook POST (Telegram sends updates here)
 @app.post(WEBHOOK_PATH)
 async def handle_webhook(request: Request):
     data = await request.json()
